@@ -41,7 +41,15 @@ abstract class AbstractKernel
 
     }
 
-    protected function load(ServerRequestInterface $request, ?DispatchConfigInterface $config = null): KernelInterface
+    /**
+     * Loader
+     *
+     * @param ServerRequestInterface $request
+     * @param DispatchConfigInterface|null $config
+     * @return KernelInterface
+     * @throws \Exception
+     */
+    protected function load(ServerRequestInterface $request, ?DispatchConfigInterface $config = null): Kernel
     {
         App::boot(new Dir($this->dir), new Path([]));
         return new Kernel($this->container, $this->middlewares, $config);

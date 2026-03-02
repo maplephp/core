@@ -1,8 +1,10 @@
 <?php
 namespace MaplePHP\Core;
 
-use MaplePHP\Container\Container;
+use MaplePHP\Core\Router\RouterDispatcher;
+use MaplePHP\Emitron\Contracts\DispatchConfigInterface;
 use MaplePHP\Emitron\Contracts\KernelInterface;
+use MaplePHP\Emitron\DispatchConfig;
 use MaplePHP\Http\Environment;
 use MaplePHP\Http\ServerRequest;
 use MaplePHP\Http\Stream;
@@ -14,6 +16,7 @@ use MaplePHP\Emitron\Middlewares\{
     HeadRequestMiddleware,
     OutputMiddleware
 };
+use Psr\Http\Message\ServerRequestInterface;
 
 final class HttpKernel extends AbstractKernel
 {
@@ -45,21 +48,36 @@ final class HttpKernel extends AbstractKernel
         return $inst;
     }
 
-    /**
-     * @param array $parts
-     * @return KernelInterface
-     * @throws \Exception
-     */
+
     public function boot(array $parts): KernelInterface
     {
         $environment = new Environment();
-        $container = new Container();
-        $container->set("env", $this->env);
         $request = new ServerRequest(new Uri($environment->getUriParts($parts)), $environment);
-
-        $kernel = $this->load($request);
-        //$kernel = new Kernel($container, $this->middlewares);
+        $config = $this->configuration($request);
+        $kernel = $this->load($request, $config);
         $kernel->run($request, $this->stream);
+
         return $kernel;
+    }
+
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return DispatchConfigInterface
+     * @throws \Exception
+     */
+    private function configuration(ServerRequestInterface $request): DispatchConfigInterface
+    {
+        $config = new DispatchConfig();
+        return $config
+            ->setRouter(function ($routerFile) use ($request) {
+                $router = new RouterDispatcher($request);
+                $router->setDispatchPath($request->getUri()->getPath());
+                if (!is_file($routerFile)) {
+                    throw new \Exception('The routes file (' . $routerFile . ') is missing.');
+                }
+                require_once $routerFile;
+                return $router;
+            });
     }
 }

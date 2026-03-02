@@ -1,0 +1,54 @@
+{
+  "name": "maplephp/http",
+  "type": "library",
+  "description": "MaplePHP/Http is a powerful and easy-to-use PHP library that fully supports the PSR-7 HTTP message and PSR-18: HTTP Client.",
+  "keywords": [
+    "PSR-7",
+    "PSR-18",
+    "http",
+    "message",
+    "http message",
+    "server",
+    "request",
+    "client",
+    "upload",
+    "stream",
+    "headers"
+  ],
+  "homepage": "https://wazabii.se",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Daniel Ronkainen",
+      "email": "daniel.ronkainen@wazabii.se"
+    },
+    {
+      "name": "MaplePHP",
+      "homepage": "https://wazabii.se"
+    }
+  ],
+  "require": {
+    "php": ">=8.2",
+    "psr/http-message": "^2.0",
+    "psr/http-factory": "^1.0",
+    "psr/http-client": "^1.0",
+    "maplephp/dto": "^3.1"
+  },
+  "require-dev": {
+    "maplephp/unitary": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "MaplePHP\\Http\\": "src"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-develop": "2.0.x-dev"
+    }
+  },
+  "minimum-stability": "dev",
+  "scripts": {
+    "unitary": "php vendor/bin/unitary"
+  }
+}

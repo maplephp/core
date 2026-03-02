@@ -1,0 +1,120 @@
+<?php
+
+/**
+ * Class Run
+ *
+ * Main entry point for initializing the Blunder error handling framework.
+ * Registers error, exception, and shutdown handlers with severity filtering,
+ * event hooks, and optional PSR-7 HTTP support.
+ *
+ * Provides control over exit behavior, redirection prevention, and
+ * severity level customization.
+ *
+ * @package    MaplePHP\Blunder
+ * @author     Daniel Ronkainen
+ * @license    Apache-2.0 license, Copyright © Daniel Ronkainen
+ *             Don't delete this comment, it's part of the license.
+ */
+
+namespace MaplePHP\Blunder;
+
+use MaplePHP\Blunder\Interfaces\AbstractHandlerInterface;
+use MaplePHP\Blunder\Interfaces\HttpMessagingInterface;
+use Closure;
+
+final class Run
+{
+    private AbstractHandlerInterface $handler;
+    private ?SeverityLevelPool $severity = null;
+    private bool $removeLocationHeader = false;
+
+    public function __construct(AbstractHandlerInterface $handler, ?HttpMessagingInterface $http = null)
+    {
+        $this->handler = $handler;
+        if ($http !== null) {
+            $this->handler->setHttp($http);
+        }
+    }
+
+    /**
+     * You can change exit code form default 1 on failure or disable it completely by passing null or false
+     *
+     * @param int|bool|null $code
+     * @return $this
+     */
+    public function setExitCode(int|null|bool $code): self
+    {
+        $this->handler->setExitCode($code);
+        return $this;
+    }
+
+    /**
+     * Disable exit on failure
+     *
+     * @return $this
+     */
+    public function disableExitCode(): self
+    {
+        $this->handler->setExitCode(false);
+        return $this;
+    }
+
+    /**
+     * Enable or disable the removal of the 'Location' header to prevent redirections.
+     *
+     * @param bool $removeRedirect
+     * @return $this
+     */
+    public function removeLocationHeader(bool $removeRedirect): self
+    {
+        $this->removeLocationHeader = $removeRedirect;
+        return $this;
+    }
+
+    /**
+     * Access severity instance to set or exclude severity levels from error handler
+     *
+     * @return SeverityLevelPool
+     */
+    public function severity(): SeverityLevelPool
+    {
+        if ($this->severity === null) {
+            $this->severity = new SeverityLevelPool();
+        }
+
+        return $this->severity;
+    }
+
+    /**
+     * The event callable will be triggered when an error occur.
+     * Note: Will add PSR-14 support for dispatch in the future.
+     *
+     * @param Closure $event
+     * @return void
+     */
+    public function event(Closure $event): void
+    {
+        $this->handler->event($event);
+    }
+
+    /**
+     * Init the handlers
+     *
+     * @return void
+     */
+    public function load(): void
+    {
+        if ($this->removeLocationHeader && !headers_sent()) {
+            header_remove('location');
+        }
+
+        // Will actually clear unwanted output in some cases
+        ob_start();
+        $this->handler->setSeverity($this->severity());
+        set_error_handler([$this->handler, "errorHandler"], $this->severity()->getSeverityLevelMask());
+        set_exception_handler([$this->handler, "exceptionHandler"]);
+        register_shutdown_function([$this->handler, "shutdownHandler"]);
+        ob_clean();
+    }
+
+}

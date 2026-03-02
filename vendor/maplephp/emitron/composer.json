@@ -1,0 +1,51 @@
+{
+  "name": "maplephp/emitron",
+  "type": "library",
+  "description": "MaplePHP Emitron is lightweight PSR-15 kernel and middleware engine that follows PSR conventions with built-in emitter, kernel, and middlewares for clean, consistent request handling.",
+  "keywords": [
+    "middleware",
+    "PSR-15",
+    "http-kernel",
+    "http-emitter",
+    "request-handler",
+    "response-emitter",
+    "psr-middleware",
+    "psr-kernel",
+    "php-framework",
+    "framework-core",
+    "maplephp",
+    "emitron"
+  ],
+  "homepage": "https://wazabii.se",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Daniel Ronkainen",
+      "email": "daniel.ronkainen@wazabii.se"
+    },
+    {
+      "name": "MaplePHP",
+      "homepage": "https://wazabii.se"
+    }
+  ],
+  "require": {
+    "php": ">=8.2",
+    "psr/http-server-middleware": "^1.0",
+    "maplephp/http": "^2.0",
+    "maplephp/container": "^2.0"
+  },
+  "require-dev": {
+    "maplephp/unitary": "^2.0"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "1.x-dev"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "MaplePHP\\Emitron\\": "src"
+    }
+  },
+  "minimum-stability": "dev"
+}

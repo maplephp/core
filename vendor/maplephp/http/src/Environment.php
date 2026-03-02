@@ -1,0 +1,114 @@
+<?php
+
+namespace MaplePHP\Http;
+
+use MaplePHP\DTO\Format;
+use MaplePHP\Http\Interfaces\EnvironmentInterface;
+
+class Environment implements EnvironmentInterface
+{
+    private $path;
+    private $env;
+
+    public function __construct(array $env = [])
+    {
+        $this->env = array_merge($_SERVER, $env);
+    }
+
+    /**
+     * Get request/server environment data
+     *
+     * @param  string      $key     Server key
+     * @param  string|null $default Default value, returned if Env data is empty
+     * @return string
+     */
+    public function get(string $key, ?string $default = ""): string
+    {
+        $key = strtoupper($key);
+        return ($this->env[$key] ?? (string)$default);
+    }
+
+    /**
+     * Set a server environment value
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return $this
+     */
+    public function set(string $key, mixed $value): self
+    {
+        $inst = clone $this;
+        $key = strtoupper($key);
+        $inst->env[$key] = $value;
+        return $inst;
+    }
+
+    /**
+     * Check if environment data exists
+     *
+     * @param  string  $key Server key
+     * @return boolean
+     */
+    public function has($key): bool
+    {
+        return (bool)($this->get($key, null));
+    }
+
+    /**
+     * Return all server environments
+     *
+     * @return array
+     */
+    public function fetch(): array
+    {
+        return $this->env;
+    }
+
+    /**
+     * Get URI environment Part data that will be passed to UriInterface and match to public object if exists.
+     *
+     * @return array
+     */
+    public function getUriParts(array $add = []): array
+    {
+        $arr = [];
+        $arr['scheme'] = ($this->get("HTTPS") === 'on') ? 'https' : 'http';
+        $arr['user'] = $this->get("PHP_AUTH_USER");
+        $arr['pass'] = $this->get("PHP_AUTH_PW");
+        $arr['host'] = ($host = $this->get("HTTP_HOST")) ? $host : $this->get("SERVER_NAME");
+        $arr['port'] = $this->get("SERVER_PORT", null);
+        $arr['path'] = $this->getPath();
+        $arr['query'] = $this->get("QUERY_STRING");
+        $arr['fragment'] = null;
+        if (!is_numeric($arr['port'])) {
+            $arr['port'] = (int)$arr['port'];
+        }
+        return array_merge($arr, $add);
+    }
+
+    /**
+     * Build and return URI Path from environment
+     *
+     * @return string
+     */
+    public function getPath(): string
+    {
+        if ($this->path === null) {
+            $basePath = '';
+            $requestName = Format\Str::value($this->get("SCRIPT_NAME"))->getUrlPath()->get();
+            $requestDir = dirname($requestName);
+            $requestUri = Format\Str::value($this->get("REQUEST_URI"))->getUrlPath()->get();
+
+            $this->path = $requestUri;
+            if (stripos($requestUri, $requestName) === 0) {
+                $basePath = $requestName;
+            } elseif ($requestDir !== '/' && stripos($requestUri, $requestDir) === 0) {
+                $basePath = $requestDir;
+            }
+            if ($basePath) {
+                $this->path = ltrim(substr($requestUri, strlen($basePath)), '/');
+            }
+        }
+        return $this->path;
+    }
+}

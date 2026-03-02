@@ -2,7 +2,9 @@
 namespace MaplePHP\Core;
 
 use Exception;
+use MaplePHP\Core\Router\RouterDispatcher;
 use MaplePHP\Emitron\Contracts\KernelInterface;
+use MaplePHP\Http\Stream;
 use Psr\Http\Message\ServerRequestInterface;
 use MaplePHP\Emitron\Contracts\DispatchConfigInterface;
 use MaplePHP\Emitron\DispatchConfig;
@@ -26,12 +28,15 @@ final class CliKernel extends AbstractKernel
         LocalMiddleware::class,
         CliInitMiddleware::class
     ];
+    protected Stream $stream;
 
     public function __construct(string $dir)
     {
         parent::__construct($dir);
         // Default config
         Kernel::setRouterFilePath($dir . "/routers/console.php");
+
+        $this->stream = new Stream(Stream::STDERR);
     }
 
     /**
@@ -45,7 +50,7 @@ final class CliKernel extends AbstractKernel
         $request = new ServerRequest(new Uri($env->getUriParts($parts)), $env);
         $config = $this->configuration($request);
         $kernel = $this->load($request, $config);
-        $kernel->run($request);
+        $kernel->run($request, $this->stream);
         return $kernel;
     }
 
@@ -60,16 +65,16 @@ final class CliKernel extends AbstractKernel
 
         return $config
             ->setRouter(function ($routerFile) use ($request) {
-                $router = new Router($request->getCliKeyword(), $request->getCliArgs());
+
+                $router = new RouterDispatcher($request);
+                $router->setDispatchPath($request->getCliKeyword());
+                //$router = new Router($request->getCliKeyword(), $request->getCliArgs());
                 if (!is_file($routerFile)) {
                     throw new Exception('The routes file (' . $routerFile . ') is missing.');
                 }
-                $newRouterInst = require_once $routerFile;
-                if (!($newRouterInst instanceof Router)) {
-                    throw new \RuntimeException('You need to return the router instance ' .
-                        'at the end of the router file (' . $routerFile . ').');
-                }
-                return $newRouterInst;
+                require_once $routerFile;
+
+                return $router;
             })
             ->setProp('exitCode', 0);
     }

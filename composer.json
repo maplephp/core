@@ -28,7 +28,8 @@
     "maplephp/validate": "^2.0",
     "maplephp/prompts": "^1.2",
     "maplephp/cache": "^2.0",
-    "maplephp/log": "^v2.0"
+    "maplephp/log": "^v2.0",
+    "nikic/fast-route": "^1.3"
   },
   "require-dev": {
     "maplephp/unitary": "^2.0"
@@ -43,5 +44,6 @@
       "MaplePHP\\Core\\": "src"
     }
   },
-  "minimum-stability": "dev"
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

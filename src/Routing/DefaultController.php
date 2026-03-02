@@ -29,36 +29,12 @@ abstract class DefaultController
      * @throws NotFoundExceptionInterface
      * @throws \ErrorException
      */
-    public function __construct(ContainerInterface $container, ResponseInterface $response)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
         $this->args = $this->container->get("args");
-        $this->props = $this->container->get("props");
-        $this->command = $this->container->get("command");
         $this->request = $this->container->get("request");
         $this->config = $this->container->get("config");
-
-        print_r($this->config);
-        die;
-
-        $this->forceShowHelp($response);
     }
 
-    /**
-     * This is a temporary solution that will show help if a user
-     * writes a wrong argv param in CLI
-     *
-     * @throws \ErrorException
-     */
-    protected function forceShowHelp(ResponseInterface $response): void
-    {
-        if (!Validator::value($response->getStatusCode())->isHttpSuccess()) {
-            $props = $this->configs->getProps();
-            $help = ($props->helpController !== null) ?
-                $props->helpController : "\MaplePHP\Unitary\Console\Controllers\HelpController";
-            $help = new $help($this->container, $response->withStatus(200));
-            $help->index();
-            exit(1);
-        }
-    }
 }
