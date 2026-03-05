@@ -3,7 +3,6 @@
 namespace MaplePHP\Core;
 
 use MaplePHP\Core\Configs\LoadConfigFiles;
-use MaplePHP\Core\Support\Request;
 use MaplePHP\Emitron\Contracts\KernelInterface;
 use MaplePHP\Http\Path;
 use MaplePHP\Http\Stream;
@@ -21,10 +20,10 @@ abstract class AbstractKernel
 {
 
     protected Stream $stream;
-    protected array $middlewares;
+	protected array $middlewares = [];
     protected Env $env;
     protected ContainerInterface $container;
-    private string $dir;
+	protected string $dir;
 
     public function __construct(string $dir)
     {
@@ -35,12 +34,12 @@ abstract class AbstractKernel
         $this->dir = realpath($dir);
 
         $config = (new LoadConfigFiles())
+            ->add("dir", $this->dir)
             ->loadEnvFile($this->dir . "/.env")
             ->loadFile($this->dir . "/configs/configs.php");
 
         $this->container = new Container();
         $this->container->set("config", $config->fetch());
-
     }
 
     /**
@@ -57,6 +56,17 @@ abstract class AbstractKernel
         return new Kernel($this->container, $this->middlewares, $config);
     }
 
+	/**
+	 * @param Stream $stream
+	 * @return $this
+	 */
+	public function withStream(Stream $stream): self
+	{
+		$inst = clone $this;
+		$inst->stream = $stream;
+		return $inst;
+	}
+
     /**
      * Clear the default middlewares, be careful with this
      *
@@ -66,24 +76,6 @@ abstract class AbstractKernel
     {
         $inst = clone $this;
         $inst->middlewares = [];
-        return $inst;
-    }
-
-    /**
-     * Clear the default middlewares, be careful with this
-     *
-     * @return $this
-     */
-    public function unsetMiddleware(string $class): self
-    {
-
-        $inst = clone $this;
-        foreach($inst->middlewares as $key => $middleware) {
-            if($middleware === $class) {
-                unset($inst->middlewares[$key]);
-                break;
-            }
-        }
         return $inst;
     }
 
@@ -146,5 +138,19 @@ abstract class AbstractKernel
         return $inst;
     }
 
-
+	/**
+	 * Helper method to load config file and return array
+	 *
+	 * @param string $relativeFilePath
+	 * @return array
+	 */
+	protected function loadConfigFile(string $relativeFilePath): array
+	{
+		$file = "/" . ltrim($relativeFilePath, "/");
+		if (!is_file($this->dir . $file)) {
+			return [];
+		}
+		$config = require $this->dir . $file;
+		return is_array($config) ? $config : [];
+	}
 }

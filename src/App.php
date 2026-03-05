@@ -12,10 +12,12 @@ final class App
     private static ?self $inst = null;
     private Dir $dir;
     private PathInterface $path;
+    private string $coreDir;
 
     private function __construct(Dir $dir, PathInterface $path) {
         $this->dir = $dir;
         $this->path = $path;
+        $this->coreDir = __DIR__;
     }
 
     /**
@@ -46,6 +48,11 @@ final class App
         }
 
         return self::$inst;
+    }
+
+    public function coreDir(): string
+    {
+        return $this->coreDir;
     }
 
     /**

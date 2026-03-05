@@ -40,6 +40,9 @@
     }
   },
   "autoload": {
+    "files": [
+      "src/Support/functions.php"
+    ],
     "psr-4": {
       "MaplePHP\\Core\\": "src"
     }
