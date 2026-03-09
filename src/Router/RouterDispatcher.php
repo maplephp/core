@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaplePHP\Core\Router;
 
 use MaplePHP\Emitron\Contracts\RouterInterface;
-use MaplePHP\Http\Interfaces\ResponseInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;

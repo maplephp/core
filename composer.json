@@ -34,17 +34,17 @@
   "require-dev": {
     "maplephp/unitary": "^2.0"
   },
-  "extra": {
-    "branch-alias": {
-      "dev-main": "1.x-dev"
-    }
-  },
   "autoload": {
     "files": [
       "src/Support/functions.php"
     ],
     "psr-4": {
       "MaplePHP\\Core\\": "src"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "1.x-dev"
     }
   },
   "minimum-stability": "dev",

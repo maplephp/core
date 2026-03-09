@@ -96,7 +96,7 @@ final class CliKernel extends AbstractKernel
                     throw new Exception('The routes file (' . $routerFile . ') is missing.');
                 }
                 require_once $routerFile;
-
+	            require_once App::get()->coreDir() . "/Router/console.php";
                 return $router;
             })
             ->setProp('exitCode', 0);

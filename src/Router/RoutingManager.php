@@ -8,9 +8,9 @@ use InvalidArgumentException;
 
 class RoutingManager
 {
-    private $method;
-    private $pattern;
-    private $controller;
+    private array|string $method;
+    private string $pattern;
+	private string|array|\Closure $controller;
 
     /**
      * Start Manager a Route, USED to make it easier to change out router library

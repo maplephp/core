@@ -85,6 +85,7 @@ final class HttpKernel extends AbstractKernel implements KernelLoadInterface
 					throw new \Exception('The routes file (' . $routerFile . ') is missing.');
 				}
 				require_once $routerFile;
+				require_once App::get()->coreDir() . "/Router/web.php";
 				return $router;
 			});
 	}
