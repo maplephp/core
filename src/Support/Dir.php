@@ -92,4 +92,14 @@ class Dir
     {
         return $this->dir . "/app";
     }
+
+	/**
+	 * Get miggration dir
+	 * 
+	 * @return string
+	 */
+	public function migrations(): string
+	{
+		return $this->dir . "/database/migrations";
+	}
 }
