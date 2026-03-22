@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Psr\Http\Message\ResponseInterface;
+use MaplePHP\Core\Routing\DefaultController;
+
+class {{ class }}Controller extends DefaultController
+{
+    /**
+     * The default action method executed when this controller is invoked by the router.
+     *
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
+	public function index(ResponseInterface $response): ResponseInterface
+	{
+        // Your code goes here
+        return $response;
+	}
+}

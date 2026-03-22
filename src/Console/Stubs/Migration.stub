@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Types\Exception\TypesException;
+use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
+use MaplePHP\Core\Support\Database\Migrations;
+
+class {{ class }}Migration extends Migrations
+{
+
+    /**
+     * Applies the forward (up) migration to modify the database schema.
+     *
+     * @param Schema $schema The schema instance used to do structural changes.
+     * @return void
+     * @throws TypesException
+     */
+    public function up(Schema $schema): void
+    {
+        $table = $schema->createTable("[YOUR_TABLE_NAME]");
+
+        $table->addColumn('id', 'integer', ['autoincrement' => true]);
+        $table->addColumn('name', 'string', ['length' => 255]);
+        $table->addColumn('status', 'integer', ['default' => 0]);
+
+        $table->addPrimaryKeyConstraint(
+            PrimaryKeyConstraint::editor()
+                ->setUnquotedColumnNames('id')
+                ->create()
+        );
+
+        $table->addIndex(['status']);
+    }
+
+    /**
+     * Reverts the previously applied (up) migration changes.
+     *
+     * @param Schema $schema The schema instance used to do structural changes.
+     * @return void
+     */
+    public function down(Schema $schema): void
+    {
+        $schema->dropTable("[YOUR_TABLE_NAME]");
+    }
+}

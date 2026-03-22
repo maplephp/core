@@ -31,16 +31,6 @@ class ServePHP
 	}
 
 	/**
-	 * Will return true if help prompt is expected
-	 *
-	 * @return bool
-	 */
-	public function isHelp(): bool
-	{
-		return isset($this->args['help']);
-	}
-
-	/**
 	 * Get URI instance
 	 *
 	 * @return UriInterface

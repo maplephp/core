@@ -39,12 +39,14 @@ class CliStatusError implements MiddlewareInterface
 			$command = $this->container->get("command");
 			/** @var \MaplePHP\Emitron\Contracts\ConfigPropsInterface $props */
 			$props = $this->container->get("props");
+
 			$blocks = new Blocks($command);
 			$blocks->addHeadline("\n--- MaplePHP Help ---");
 			$blocks->addSection("Usage", "./maple [type] [options]");
-			$blocks->addSection("Options", function (Blocks $inst) use ($props) {
-				foreach($props->toArray() as $prop => $value) {
-					$inst = $inst->addOption("--$prop", $props->getPropDesc($prop));
+			$blocks->addSection("Options", function (Blocks $inst) use ($props): Blocks {
+				foreach ($props->toArray() as $prop => $value) {
+					$result = $inst->addOption("--$prop", $props->getPropDesc($prop));
+					$inst = ($result instanceof Blocks) ? $result : $inst;
 				}
 				return $inst;
 			});
@@ -56,4 +58,5 @@ class CliStatusError implements MiddlewareInterface
 
 		return $response;
 	}
+
 }

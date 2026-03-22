@@ -4,13 +4,32 @@ declare(strict_types=1);
 
 namespace MaplePHP\Core\Routing\Serve;
 
+use MaplePHP\Core\Console\ArgDefinition;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use MaplePHP\Core\Routing\DefaultShellController;
+use MaplePHP\Core\Routing\DefaultCommand;
 use MaplePHP\Core\Support\Process\ServePHP;
 
-class ServeController extends DefaultShellController
+class ServeController extends DefaultCommand
 {
+
+	public static function name(): string
+	{
+		return 'serve';
+	}
+
+	public static function description(): string
+	{
+		return 'Run development server';
+	}
+
+	protected function args(): array
+	{
+		return [
+			new ArgDefinition('host', 'Set custom host, e.g. 127.0.0.1'),
+			new ArgDefinition('port', 'Set custom port, e.g. 8888'),
+		];
+	}
 
 	/**
 	 * A simple PHP server
@@ -22,25 +41,7 @@ class ServeController extends DefaultShellController
 	public function index(ResponseInterface $response, RequestInterface $request): ResponseInterface
 	{
 		$add = new ServePHP($request, $this->command);
-
-		if ($add->isHelp()) {
-			$this->command->message('');
-			$this->command->title('Unitary – PHP Server');
-			$this->command->message('');
-			$this->command->title('Start the PHP development server:');
-			$this->command->statusMsg('./maple serve');
-			$this->command->message('');
-			$this->command->message('Start with custom host and port:');
-			$this->command->statusMsg(
-				'./maple serve --host=' . $add->getUri()->getHost() .
-				' --port=' . $add->getUri()->getPort()
-			);
-			$this->command->message('');
-
-		} else {
-			$add->run('MaplePHP development server is now running:');
-		}
-
+		$add->run('MaplePHP development server is now running:');
 		return $response;
 	}
 

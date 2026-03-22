@@ -4,25 +4,45 @@ declare(strict_types=1);
 
 namespace MaplePHP\Core\Routing\Migrations;
 
+use MaplePHP\Core\Console\ArgDefinition;
+use MaplePHP\Core\Support\Database\MigrationTracker;
+use MaplePHP\DTO\Format\Str;
+use MaplePHP\DTO\Traverse;
+use MaplePHP\Http\StreamFactory;
 use RuntimeException;
 use Psr\Http\Message\ResponseInterface;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use MaplePHP\Core\App;
 use MaplePHP\Core\Support\Database\Migrations;
-use MaplePHP\Core\Routing\DefaultShellController;
+use MaplePHP\Core\Routing\DefaultCommand;
 use MaplePHP\Core\Support\Database\DB;
 
-class MigrateController extends DefaultShellController
+class MigrateController extends DefaultCommand
 {
 	private ?AbstractSchemaManager $schemaManager = null;
-	
-	/**
-	 * Run ALL migrations (up), or a single one if --name is provided.
-	 */
+	private ?MigrationTracker $tracker = null;
+
+	public static function name(): string
+	{
+		return 'migrate';
+	}
+
+	public static function description(): string
+	{
+		return 'Create database migrations';
+	}
+
+	protected function args(): array
+	{
+		return [
+			new ArgDefinition('name', 'Run only one migration by name (always re-runs even if already migrated)'),
+		];
+	}
+
 	public function index(ResponseInterface $response): ResponseInterface
 	{
-		if (!$this->confirm("Are you sure you want to run ALL migrations?")) {
+		if (!$this->confirm($this->confirmMessage("UP"))) {
 			return $response;
 		}
 
@@ -31,12 +51,9 @@ class MigrateController extends DefaultShellController
 		return $response;
 	}
 
-	/**
-	 * Run migrations up, or a single one if --name is provided.
-	 */
 	public function up(ResponseInterface $response): ResponseInterface
 	{
-		if (!$this->confirm("Are you sure you want to run migration UP?")) {
+		if (!$this->confirm($this->confirmMessage("UP"))) {
 			return $response;
 		}
 
@@ -45,23 +62,25 @@ class MigrateController extends DefaultShellController
 		return $response;
 	}
 
-	/**
-	 * Run migrations down, or a single one if --name is provided.
-	 */
 	public function down(ResponseInterface $response): ResponseInterface
 	{
-		if (!$this->confirm("Are you sure you want to run migration DOWN?")) {
+		if (!$this->confirm($this->confirmMessage("DOWN"))) {
 			return $response;
 		}
 
-		$this->runDirection('down');
+		$last = $this->getTracker()->last();
+
+		if ($last === null) {
+			$this->command->message("Nothing to roll back.");
+			return $response;
+		}
+
+		$file = App::get()->dir()->migrations() . '/' . $last['file'];
+		$this->runMigration($file, 'down', force: true);
 
 		return $response;
 	}
 
-	/**
-	 * Roll back and re-run migrations (down + up), or a single one if --name is provided.
-	 */
 	public function fresh(ResponseInterface $response): ResponseInterface
 	{
 		if (!$this->confirm("Are you sure you want to refresh migration?")) {
@@ -74,21 +93,43 @@ class MigrateController extends DefaultShellController
 		return $response;
 	}
 
+	public function clear(ResponseInterface $response): ResponseInterface
+	{
+		if (!$this->confirm("Are you sure you want to clear migration?")) {
+			return $response;
+		}
+
+		$this->runDirection('down');
+
+		return $response;
+	}
+
 	// -------------------------------------------------------------------------
 	// Private helpers
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Run all migration files in the given direction, or only the one
-	 * matching --name if supplied.
-	 */
+	private function confirmMessage(string $direction): string
+	{
+		if (isset($this->args['name'])) {
+			return "Are you sure you want to run {$this->args['name']} migration $direction?";
+		}
+
+		return "Are you sure you want to run all available migration $direction?";
+	}
+
 	private function runDirection(string $direction): void
 	{
-		$name  = !empty($this->args['name']) ? strtolower($this->args['name']) : null;
+		$name  = !empty($this->args['name'])
+			? Str::value($this->args['name'])->toLower()->get()
+			: null;
+
 		$files = $this->getMigrationFiles();
 
 		if ($name !== null) {
-			$files = array_filter($files, fn(string $file) => strtolower(pathinfo($file, PATHINFO_FILENAME)) === $name);
+			$files = array_filter(
+				$files,
+				fn(string $file) => Str::value(pathinfo($file, PATHINFO_FILENAME))->toLower()->get() === $name
+			);
 
 			if (empty($files)) {
 				throw new RuntimeException("No migration file found matching \"$name\".");
@@ -96,23 +137,33 @@ class MigrateController extends DefaultShellController
 		}
 
 		foreach ($files as $file) {
-			$this->runMigration($file, $direction);
+			$this->runMigration($file, $direction, force: $name !== null);
 		}
 	}
 
-	/**
-	 * Instantiate, execute, and persist a single migration file.
-	 */
-	private function runMigration(string $file, string $direction): void
+	private function runMigration(string $file, string $direction, bool $force = false): void
 	{
-		$base  = pathinfo($file, PATHINFO_FILENAME);
-		$class = "\\Migrations\\" . ucfirst($base);
+		$tracker = $this->getTracker();
 
-		if (!class_exists($class)) {
-			throw new RuntimeException("Migration class $class does not exist.");
+		if (!$force && $tracker->has($file, $direction)) {
+			$this->command->message(
+				$this->command->getAnsi()->grey("Skipping already migrated: " . basename($file))
+			);
+			return;
 		}
 
-		$inst = new $class();
+		$segments = Traverse::value(explode('_', pathinfo($file, PATHINFO_FILENAME)));
+		$class    = $segments->last()->strUcFirst()->get();
+
+		require_once $file;
+
+		$fqcn = '\\Migrations\\' . $class;
+
+		if (!class_exists($fqcn)) {
+			throw new RuntimeException("Migration class $fqcn does not exist.");
+		}
+
+		$inst = new $fqcn();
 		if (!($inst instanceof Migrations)) {
 			throw new RuntimeException("Migration class must extend: " . Migrations::class);
 		}
@@ -122,16 +173,18 @@ class MigrateController extends DefaultShellController
 		$targetSchema  = clone $currentSchema;
 
 		$inst->{$direction}($targetSchema);
-
 		$this->executeSchema($currentSchema, $targetSchema);
 
-		$label = strtoupper($direction);
-		$this->command->approve("Executed migration $label: $class");
+		if ($direction === 'up') {
+			$tracker->add($file, $class, $direction);
+		} else {
+			$tracker->remove($file, 'up');
+		}
+
+		$label = Str::value($direction)->toUpper()->get();
+		$this->command->approve("Executed migration $label: $fqcn");
 	}
 
-	/**
-	 * Diff two schemas and execute the resulting SQL, if any.
-	 */
 	private function executeSchema(Schema $fromSchema, Schema $toSchema): void
 	{
 		$connection = DB::getConnection();
@@ -151,9 +204,6 @@ class MigrateController extends DefaultShellController
 		}
 	}
 
-	/**
-	 * Lazy-load and cache the schema manager.
-	 */
 	private function getSchemaManager(): AbstractSchemaManager
 	{
 		if ($this->schemaManager === null) {
@@ -163,9 +213,18 @@ class MigrateController extends DefaultShellController
 		return $this->schemaManager;
 	}
 
-	/**
-	 * Return all migration files, sorted for deterministic order.
-	 */
+	private function getTracker(): MigrationTracker
+	{
+		if ($this->tracker === null) {
+			$this->tracker = new MigrationTracker(
+				App::get()->dir()->migrations(),
+				new StreamFactory()
+			);
+		}
+
+		return $this->tracker;
+	}
+
 	private function getMigrationFiles(): array
 	{
 		$migDir = App::get()->dir()->migrations();
@@ -180,9 +239,6 @@ class MigrateController extends DefaultShellController
 		return $files;
 	}
 
-	/**
-	 * Show a confirmation prompt and abort with a message if declined.
-	 */
 	private function confirm(string $question): bool
 	{
 		if ($this->command->confirm($question)) {

@@ -6,6 +6,7 @@ namespace MaplePHP\Core;
 
 use MaplePHP\Core\Configs\LoadConfigFiles;
 use MaplePHP\Core\Support\ServiceProvider;
+use MaplePHP\DTO\Format\Clock;
 use MaplePHP\Emitron\Contracts\KernelInterface;
 use MaplePHP\Http\Stream;
 use Psr\Container\ContainerInterface;
@@ -46,6 +47,11 @@ abstract class AbstractKernel
         $this->container = new Container();
         $this->container->set("config", $this->config);
 	    $this->container->set("app", $app);
+
+
+
+	    Clock::setDefaultLocale($this->config['configs']['locale']);
+	    Clock::setDefaultTimezone($this->config['configs']['timezone']);
     }
 
     /**
@@ -58,13 +64,12 @@ abstract class AbstractKernel
      */
     protected function load(ServerRequestInterface $request, ?DispatchConfigInterface $config = null): KernelInterface
     {
-
 	    $this->bootServiceProviders();
         return new Kernel($this->container, $this->middlewares, $config);
     }
 
 	/**
-	 * Boot servcice providers
+	 * Boot service providers
 	 *
 	 * @return void
 	 */

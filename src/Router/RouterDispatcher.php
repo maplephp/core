@@ -27,6 +27,7 @@ class RouterDispatcher implements RouterInterface
     private ?Dispatcher $dispatcher = null;
     private string $dispatchPath = "";
     private string $method;
+	private static array $commands = [];
     //private array $middlewares = [];
 
     /**
@@ -63,6 +64,11 @@ class RouterDispatcher implements RouterInterface
     {
         $this->dispatchPath = "/" . ltrim($path, "/");
     }
+
+	public function setDispatchCommand(string $command): void
+	{
+		$this->dispatchPath = ltrim($command, "/");
+	}
 
     /**
      * Cache the router data to a cache file for increased performance.
@@ -194,8 +200,20 @@ class RouterDispatcher implements RouterInterface
      */
     public function cli(string $pattern, string|array|callable $controller): void
     {
+	    $pattern = ltrim($pattern, "/");
+	    self::$commands[] = [$pattern, $controller];
         $this->shell($pattern, $controller);
     }
+
+	/**
+	 * Get registered commands
+	 *
+	 * @return array
+	 */
+	public static function getCommands(): array
+	{
+		return self::$commands;
+	}
 
     /**
      * Will feed the Dispatcher with routes

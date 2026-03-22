@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use MaplePHP\Core\Routing\DefaultCommand;
+use MaplePHP\Core\Console\ArgDefinition;
+
+class {{ class }}Command extends DefaultCommand
+{
+
+    /**
+     * Set unique command name to show in help titles.
+     *
+     * @return string
+     */
+    public static function name(): string
+    {
+        return 'make';
+    }
+
+    /**
+     * Provides a short, human-readable description of the command.
+     *
+     * @return string
+     */
+    public static function description(): string
+    {
+        return 'Add a description';
+    }
+
+    /**
+     * Defines the expected input arguments for the command.
+     *
+     * @return array
+     */
+    protected function args(): array
+    {
+        return [
+            new ArgDefinition('type', 'Add a description', required: false),
+            new ArgDefinition('name', 'Add a description', required: false),
+        ];
+    }
+
+    /**
+     * The default action method executed when this controller is invoked by the router.
+     *
+     * @return void
+     */
+	public function index(): void
+	{
+        $this->command->message("Hello World!");
+	}
+}
