@@ -120,4 +120,14 @@ final class App implements AppInterface
     {
         return $this->dir;
     }
+
+	/**
+	 * Get the app core configs
+	 *
+	 * @return array
+	 */
+	public function configs(): array
+	{
+		return $this->config;
+	}
 }
