@@ -58,7 +58,7 @@ final class App implements AppInterface
 	 */
 	public function isProd(): bool
 	{
-		return $this->config['env'] === Environment::PROD->name();
+		return ($this->config['configs']['env'] ?? "development") === Environment::PROD->name();
 	}
 
 	/**
@@ -68,7 +68,7 @@ final class App implements AppInterface
 	 */
 	public function isStage(): bool
 	{
-		return $this->config['env'] === Environment::STAGE->name();
+		return ($this->config['configs']['env'] ?? "development") === Environment::STAGE->name();
 	}
 
 	/**
@@ -78,7 +78,7 @@ final class App implements AppInterface
 	 */
 	public function isTest(): bool
 	{
-		return $this->config['env'] === Environment::TEST->name();
+		return ($this->config['configs']['env'] ?? "development") === Environment::TEST->name();
 	}
 
 	/**
@@ -88,7 +88,7 @@ final class App implements AppInterface
 	 */
 	public function isDev(): bool
 	{
-		return $this->config['env'] === Environment::DEV->name();
+		return ($this->config['configs']['env'] ?? "development") === Environment::DEV->name();
 	}
 
 	/**
@@ -98,7 +98,7 @@ final class App implements AppInterface
 	 */
 	public function env(): string
 	{
-		return $this->config['env'] ?? Environment::PROD->name();
+		return ($this->config['configs']['env'] ?? "development") ?? Environment::PROD->name();
 	}
 
 	/**
