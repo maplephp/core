@@ -33,6 +33,16 @@ class Dir
         return $this->dir . "/public";
     }
 
+	/**
+	 * Get the public directory
+	 *
+	 * @return string
+	 */
+	public function resources(): string
+	{
+		return $this->dir . "/resources";
+	}
+
     /**
      * Get the routers directory
      *
@@ -40,7 +50,7 @@ class Dir
      */
     public function routers(): string
     {
-        return $this->dir . "/public";
+        return $this->dir . "/routers";
     }
 
     /**

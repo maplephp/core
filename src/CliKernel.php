@@ -182,7 +182,7 @@ final class CliKernel extends AbstractKernel
 				$inst = $inst
 					->addOption(
 						"./maple $name",
-						$desc
+						(string)$desc
 					);
 			}
 			return $inst;
