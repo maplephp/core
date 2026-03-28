@@ -17,24 +17,22 @@ abstract class DefaultController
     protected readonly ServerRequestInterface|RequestInterface $request;
     protected readonly ContainerInterface $container;
     protected Command $command;
-    protected array $config;
     protected array $args;
     protected ?ConfigPropsInterface $props = null;
     protected string|bool $path;
 
-    /**
-     * Set some data type safe object that comes from container and the dispatcher
-     *
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws \ErrorException
-     */
+	/**
+	 * Set some data type safe object that comes from container and the dispatcher
+	 *
+	 * @param ContainerInterface $container
+	 * @throws ContainerExceptionInterface
+	 * @throws NotFoundExceptionInterface
+	 */
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
         $this->args = $this->container->get("args");
         $this->request = $this->container->get("request");
-        $this->config = $this->container->get("config");
     }
 
 }

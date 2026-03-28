@@ -26,10 +26,7 @@ class TwigErrorPage implements ErrorPageInterface
 			'cache' => false,
 		]);
 
-		$configs = App::get()->configs();
-		$configs = isset($configs['configs']) ? $configs['configs'] : ['app_title' => "MaplePHP"];
-
-		$twig->addGlobal('app', $configs);
+		$twig->addGlobal('app', App::get()->app());
 
 		return $twig->render('error.twig', [
 			'code' => $response->getStatusCode(),

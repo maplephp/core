@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome — MaplePHP</title>
+    <title>Welcome to MaplePHP</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -301,9 +301,9 @@
         </div>
         <pre><span class="kw">class</span> <span class="fn">HelloController</span> <span class="kw">extends</span> <span class="fn">DefaultController</span>
 {
-    <span class="kw">public function</span> <span class="fn">show</span>(<span class="fn">Twig</span> <span class="va">$twig</span>, <span class="fn">PathInterface</span> <span class="va">$path</span>): <span class="fn">ResponseInterface</span>
+    <span class="kw">public function</span> <span class="fn">show</span>(<span class="fn">Twig</span> <span class="va">$twig</span>, <span class="fn">PathInterface</span> <span class="va">$path</span>): <span class="fn">void</span>
     {
-        <span class="kw">return</span> <span class="va">$twig</span>-><span class="fn">render</span>(<span class="st">'views/hello.twig'</span>, [
+        <span class="va">$twig</span>-><span class="fn">render</span>(<span class="st">'views/hello.twig'</span>, [
             <span class="st">'title'</span> => <span class="st">'Hello'</span>,
             <span class="st">'name'</span>  => <span class="va">$path</span>-><span class="fn">select</span>(<span class="st">'name'</span>)-><span class="fn">last</span>(),
         ]);
@@ -312,7 +312,7 @@
     </div>
 
     <div class="footer">
-        <p>MaplePHP &mdash; <a href="https://github.com/maplephp/maplephp" target="_blank" rel="noopener">github.com/maplephp</a> &mdash; PHP 8.2+ &mdash; Apache 2.0</p>
+        <p>MaplePHP &mdash; <a href="https://github.com/maplephp/maplephp" target="_blank" rel="noopener">Github</a> &mdash; PHP 8.2+ </p>
     </div>
 
 </div>

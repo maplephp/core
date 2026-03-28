@@ -21,7 +21,6 @@ abstract class DefaultCommand
     protected readonly ServerRequestInterface|RequestInterface $request;
     protected readonly ContainerInterface $container;
     protected Command $command;
-    protected array $config;
     protected array $args;
     protected ?ConfigPropsInterface $props = null;
     protected string|bool $path;
@@ -40,7 +39,6 @@ abstract class DefaultCommand
         $this->props = $this->container->get("props");
         $this->command = $this->container->get("command");
         $this->request = $this->container->get("request");
-        $this->config = $this->container->get("config");
     }
 
 	/**

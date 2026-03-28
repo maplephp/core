@@ -17,11 +17,7 @@ class Twig
     public function __construct(ContainerInterface $container, ResponseInterface $response)
     {
         $this->twig = $container->get(Environment::class);
-
-	    $configs = App::get()->configs();
-	    $configs = isset($configs['configs']) ? $configs['configs'] : ['app_title' => "MaplePHP"];
-
-	    $this->twig->addGlobal('app', $configs);
+	    $this->twig->addGlobal('app', App::get()->app());
         $this->response = $response;
     }
 

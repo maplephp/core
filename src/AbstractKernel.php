@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MaplePHP\Core;
 
+use MaplePHP\Container\Autowire;
 use MaplePHP\Core\Configs\LoadConfigFiles;
 use MaplePHP\Core\Support\ServiceProvider;
 use MaplePHP\DTO\Format\Clock;
@@ -42,14 +43,16 @@ abstract class AbstractKernel
 			->loadFiles($this->dir . "/configs/");
 
 		$this->config = $config->fetch();
-
 		$app = App::boot(new Dir($this->dir), $this->config);
 		$this->container = new Container();
-		$this->container->set("config", $this->config);
 		$this->container->set("app", $app);
 
-		Clock::setDefaultLocale($this->config['configs']['locale']);
-		Clock::setDefaultTimezone($this->config['configs']['timezone']);
+		if(App::get()->getApp('locale') !== null) {
+			Clock::setDefaultLocale(App::get()->getApp('locale'));
+		}
+		if(App::get()->getApp('timezone') !== null) {
+			Clock::setDefaultTimezone(App::get()->getApp('timezone'));
+		}
 	}
 
 	/**
@@ -62,8 +65,26 @@ abstract class AbstractKernel
 	 */
 	protected function load(ServerRequestInterface $request, ?DispatchConfigInterface $config = null): KernelInterface
 	{
-		$this->bootServiceProviders();
+
+		if (isset($this->config['providers']) && is_array($this->config['providers'])) {
+			$this->bootServiceProviders($this->config['providers']);
+		}
+
+		if (isset($this->config['services']['providers']) && is_array($this->config['services']['providers'])) {
+			$this->bootServiceProviders($this->config['services']['providers']);
+		}
+
+		if (isset($this->config['services']['bindings']) && is_array($this->config['services']['bindings'])) {
+			$this->bootBindings($this->config['services']['bindings']);
+		}
+
 		return new Kernel($this->container, $this->middlewares, $config);
+	}
+
+
+	public function bootBindings(array $bindings): void
+	{
+		Autowire::interfaceWiring($bindings);
 	}
 
 	/**
@@ -71,28 +92,34 @@ abstract class AbstractKernel
 	 *
 	 * @return void
 	 */
-	protected function bootServiceProviders()
+	protected function bootServiceProviders(array $providers)
 	{
-		if (isset($this->config['providers'])) {
-			$providers = [];
+		if ($providers !== []) {
+			$set = [];
 
-			// We want to register first, that way the providers could talk to eachother
-			// through the container or event listners if you want.
-			foreach ($this->config['providers'] as $providerClass) {
-				$provider = new $providerClass();
-				if (!($provider instanceof ServiceProvider)) {
-					throw new \RuntimeException(
-						"$providerClass is not an instance of " . ServiceProvider::class . "!"
-					);
-				}
-				$provider->register($this->container);
-				$providers[] = $provider;
+			// We want to register first, that way the providers could talk to each other
+			// through the container or event listeners if you want.
+			foreach ($providers as $providerClass) {
+				$this->registerProvider($providerClass, $set);
 			}
 
-			foreach ($providers as $provider) {
+			foreach ($set as $provider) {
 				$provider->boot();
 			}
 		}
+	}
+
+
+	private function registerProvider(string $providerClass, array &$providers): void
+	{
+		$provider = new $providerClass();
+		if (!($provider instanceof ServiceProvider)) {
+			throw new \RuntimeException(
+				"$providerClass is not an instance of " . ServiceProvider::class . "!"
+			);
+		}
+		$provider->register($this->container);
+		$providers[] = $provider;
 	}
 
 	/**

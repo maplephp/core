@@ -26,8 +26,7 @@ class StaticRenderer
 	private function renderFile(string $fileName, array $data = [])
 	{
 		$response = $this->response;
-		$configs = App::get()->configs();
-		$configs = isset($configs['configs']) ? $configs['configs'] : ['app_title' => "MaplePHP"];
+		$app = App::get()->app();
 
 		extract($data);
 

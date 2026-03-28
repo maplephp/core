@@ -14,11 +14,14 @@ final class App implements AppInterface
     private Dir $dir;
     private string $coreDir;
 	private array $config;
+	private array $app;
 
 	private function __construct(Dir $dir, array $config = []) {
         $this->dir = $dir;
         $this->coreDir = __DIR__;
 		$this->config = $config;
+		// Renamed configs to app
+		$this->app = $this->config['app'] ?? ($this->config['configs'] ?? []);
     }
 
 	/**
@@ -58,7 +61,7 @@ final class App implements AppInterface
 	 */
 	public function isProd(): bool
 	{
-		return ($this->config['configs']['env'] ?? "development") === Environment::PROD->name();
+		return ($this->app['env'] ?? "development") === Environment::PROD->name();
 	}
 
 	/**
@@ -68,7 +71,7 @@ final class App implements AppInterface
 	 */
 	public function isStage(): bool
 	{
-		return ($this->config['configs']['env'] ?? "development") === Environment::STAGE->name();
+		return ($this->app['env'] ?? "development") === Environment::STAGE->name();
 	}
 
 	/**
@@ -78,7 +81,7 @@ final class App implements AppInterface
 	 */
 	public function isTest(): bool
 	{
-		return ($this->config['configs']['env'] ?? "development") === Environment::TEST->name();
+		return ($this->app['env'] ?? "development") === Environment::TEST->name();
 	}
 
 	/**
@@ -88,7 +91,7 @@ final class App implements AppInterface
 	 */
 	public function isDev(): bool
 	{
-		return ($this->config['configs']['env'] ?? "development") === Environment::DEV->name();
+		return ($this->app['env'] ?? "development") === Environment::DEV->name();
 	}
 
 	/**
@@ -98,7 +101,7 @@ final class App implements AppInterface
 	 */
 	public function env(): string
 	{
-		return ($this->config['configs']['env'] ?? "development") ?? Environment::PROD->name();
+		return ($this->app['env'] ?? "development") ?? Environment::PROD->name();
 	}
 
 	/**
@@ -129,5 +132,26 @@ final class App implements AppInterface
 	public function configs(): array
 	{
 		return $this->config;
+	}
+
+	/**
+	 * Get the app core configs
+	 *
+	 * @return array
+	 */
+	public function app(): array
+	{
+		return $this->app;
+	}
+
+	/**
+	 * Get the app core configs prop
+	 *
+	 * @param string $key
+	 * @return mixed
+	 */
+	public function getApp(string $key): mixed
+	{
+		return $this->app[$key] ?? null;
 	}
 }

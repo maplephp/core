@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MaplePHP\Core\Providers;
 
+use MaplePHP\Core\App;
 use Psr\Container\ContainerInterface;
 use Doctrine\DBAL\DriverManager;
 use MaplePHP\Core\Support\ServiceProvider;
@@ -20,7 +21,7 @@ class DatabaseProvider extends ServiceProvider
 	public function register(ContainerInterface $container): void
 	{
 		$this->container = $container;
-		$config = $container->get('config');
+		$config = App::get()->configs();
 		$default = ($config['database']['default'] ?? null);
 		if (!empty($default)) {
 			$dbConfig = $this->resolveConnection($config);

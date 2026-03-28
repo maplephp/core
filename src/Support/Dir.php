@@ -48,9 +48,15 @@ class Dir
      *
      * @return string
      */
+
+	public function routes(): string
+	{
+		return $this->dir . "/routes";
+	}
+
     public function routers(): string
     {
-        return $this->dir . "/routers";
+        return $this->routes();
     }
 
     /**
