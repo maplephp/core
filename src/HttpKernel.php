@@ -23,12 +23,12 @@ final class HttpKernel extends AbstractKernel implements KernelLoadInterface
 	public function __construct(string $dir)
 	{
 		parent::__construct($dir);
-		Kernel::setRouterFilePath($dir . "/routers/web.php");
+		Kernel::setRouterFilePath(App::get()->dir()->routes() . "/web.php");
 		$this->stream = new Stream(Stream::TEMP);
 	}
 
 	/**
-	 * Initialize the HTTP kernel with default framework configuration.
+	 * Initialize the HTTP kernel with the default framework configuration.
 	 *
 	 * This method loads HTTP-related configuration from `/configs/http.php`
 	 * and registers globally configured middleware. It also attaches the

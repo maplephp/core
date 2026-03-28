@@ -43,7 +43,7 @@ final class CliKernel extends AbstractKernel
 	{
 		parent::__construct($dir);
 		// Default config
-		Kernel::setRouterFilePath($dir . "/routers/console.php");
+		Kernel::setRouterFilePath(App::get()->dir()->routes() . "/console.php");
 		$this->stream = new Stream(Stream::STDERR);
 	}
 
